@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Lab 8 - GeoJSON</title>
+  <title>Lab 9 - GeoJSON Choropleth Map</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ✅ Fixed Leaflet CSS link (no integrity) -->
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   
   <style>
@@ -13,16 +13,18 @@
   </style>
 </head>
 <body>
+  <h1>Denver ACS 2021</h1>
+  <h2>Median Income Choropleth Map</h2>
   <div id="map"></div>
 
-  <!-- ✅ Fixed Leaflet JS script (no integrity) -->
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
   <script>
-    // ##1: Create the map object
-    map = L.map('map').setView([0, 0], 10);
+    // Create the map object
+    var map = L.map('map').setView([39.7392, -104.9903], 11);
 
-    // Add basemap layers
+    // Basemap layers
     var OSMTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
@@ -35,23 +37,50 @@
       attribution: '&copy; OpenTopoMap contributors'
     });
 
-    // ##2: Base maps object
+    // Base maps object
     var baseMaps = {
       "OpenStreetMap": OSMTiles,
       "Humanitarian OSM": HOTOSMTiles,
       "OpenTopoMap": OpenTopoMap
     };
 
-    // ##3: Add layer control
+    // Layer control
     var layerControl = L.control.layers(baseMaps, null).addTo(map);
 
-    // ##4: Load GeoJSON layer
+    // Style function based on Median Income
+    function style1(feature) {
+      var d = feature.properties.MEDIAN_INCOME;
+      var answer = d > 100000 ? '#084081' :
+                   d > 80000 ? '#0868ac' :
+                   d > 60000 ? '#2b8cbe' :
+                   d > 40000 ? '#4eb3d3' :
+                   d > 20000 ? '#7bccc4' :
+                   d > 10000 ? '#a8ddb5' :
+                   d > 0 ? '#ccebc5' :
+                   '#f7fcf0';
+      var styleReturn = {
+        fillColor: answer,
+        weight: 1,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+      };
+      return styleReturn;
+    }
+
+    // Load GeoJSON and add layer with style and popup
     fetch("acs_denver_2021.geojson")
       .then(response => response.json())
       .then(data => {
-        var geojsonLayer = L.geoJSON(data).addTo(map);
-        map.fitBounds(geojsonLayer.getBounds());
-        layerControl.addOverlay(geojsonLayer, "Denver ACS Layer");
+        var acsDenver2021Layer = L.geoJSON(data, {
+          style: style1,
+          onEachFeature: function(feature, layer) {
+            layer.bindPopup("Median Income: $" + feature.properties.MEDIAN_INCOME);
+          }
+        }).addTo(map);
+        map.fitBounds(acsDenver2021Layer.getBounds());
+        layerControl.addOverlay(acsDenver2021Layer, "Denver ACS 2021 - Median Income");
       });
   </script>
 </body>
