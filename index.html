@@ -14,7 +14,7 @@
 </head>
 <body>
   <h1>Denver ACS 2021</h1>
-  <h2>Median Income Choropleth Map</h2>
+  <h2>Poverty Rate Choropleth Map</h2>
   <div id="map"></div>
 
   <!-- Leaflet JS -->
@@ -47,17 +47,16 @@
     // Layer control
     var layerControl = L.control.layers(baseMaps, null).addTo(map);
 
-    // Style function (assuming MED_INC for median income field)
+    // Style function (now based on poverty percentage)
     function style1(feature) {
-      var d = feature.properties.MED_INC; // <-- You will change MED_INC to correct name if needed
-      var answer = d > 100000 ? '#084081' :
-                   d > 80000 ? '#0868ac' :
-                   d > 60000 ? '#2b8cbe' :
-                   d > 40000 ? '#4eb3d3' :
-                   d > 20000 ? '#7bccc4' :
-                   d > 10000 ? '#a8ddb5' :
-                   d > 0 ? '#ccebc5' :
-                   '#f7fcf0';
+      var d = feature.properties.PCT_POVERTY;
+      var answer = d > 30 ? '#800026' :
+                   d > 20 ? '#BD0026' :
+                   d > 15 ? '#E31A1C' :
+                   d > 10 ? '#FC4E2A' :
+                   d > 5 ? '#FD8D3C' :
+                   d > 0 ? '#FEB24C' :
+                   '#FFEDA0';
       var styleReturn = {
         fillColor: answer,
         weight: 1,
@@ -73,15 +72,14 @@
     fetch("acs_denver_2021.geojson")
       .then(response => response.json())
       .then(data => {
-        console.log(data.features[0].properties); // 👈 This will print property names
         var acsDenver2021Layer = L.geoJSON(data, {
           style: style1,
           onEachFeature: function(feature, layer) {
-            layer.bindPopup("Median Income: $" + feature.properties.MED_INC); // <-- update field name if needed
+            layer.bindPopup("Percent Poverty: " + feature.properties.PCT_POVERTY + "%");
           }
         }).addTo(map);
         map.fitBounds(acsDenver2021Layer.getBounds());
-        layerControl.addOverlay(acsDenver2021Layer, "Denver ACS 2021 - Median Income");
+        layerControl.addOverlay(acsDenver2021Layer, "Denver ACS 2021 - Poverty Rate");
       });
   </script>
 </body>
