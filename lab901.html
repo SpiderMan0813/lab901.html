@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lab 8 - GeoJSON</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ✅ Fixed Leaflet CSS link (no integrity) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  
+  <style>
+    #map { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- ✅ Fixed Leaflet JS script (no integrity) -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+  <script>
+    // ##1: Create the map object
+    map = L.map('map').setView([0, 0], 10);
+
+    // Add basemap layers
+    var OSMTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    var HOTOSMTiles = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors, Humanitarian style'
+    });
+
+    var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenTopoMap contributors'
+    });
+
+    // ##2: Base maps object
+    var baseMaps = {
+      "OpenStreetMap": OSMTiles,
+      "Humanitarian OSM": HOTOSMTiles,
+      "OpenTopoMap": OpenTopoMap
+    };
+
+    // ##3: Add layer control
+    var layerControl = L.control.layers(baseMaps, null).addTo(map);
+
+    // ##4: Load GeoJSON layer
+    fetch("acs_denver_2021.geojson")
+      .then(response => response.json())
+      .then(data => {
+        var geojsonLayer = L.geoJSON(data).addTo(map);
+        map.fitBounds(geojsonLayer.getBounds());
+        layerControl.addOverlay(geojsonLayer, "Denver ACS Layer");
+      });
+  </script>
+</body>
+</html>
