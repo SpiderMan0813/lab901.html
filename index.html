@@ -47,9 +47,9 @@
     // Layer control
     var layerControl = L.control.layers(baseMaps, null).addTo(map);
 
-    // Style function based on Median Income
+    // Style function (assuming MED_INC for median income field)
     function style1(feature) {
-      var d = feature.properties.MEDIAN_INCOME;
+      var d = feature.properties.MED_INC; // <-- You will change MED_INC to correct name if needed
       var answer = d > 100000 ? '#084081' :
                    d > 80000 ? '#0868ac' :
                    d > 60000 ? '#2b8cbe' :
@@ -69,14 +69,15 @@
       return styleReturn;
     }
 
-    // Load GeoJSON and add layer with style and popup
+    // Load GeoJSON and add styled layer with popup
     fetch("acs_denver_2021.geojson")
       .then(response => response.json())
       .then(data => {
+        console.log(data.features[0].properties); // 👈 This will print property names
         var acsDenver2021Layer = L.geoJSON(data, {
           style: style1,
           onEachFeature: function(feature, layer) {
-            layer.bindPopup("Median Income: $" + feature.properties.MEDIAN_INCOME);
+            layer.bindPopup("Median Income: $" + feature.properties.MED_INC); // <-- update field name if needed
           }
         }).addTo(map);
         map.fitBounds(acsDenver2021Layer.getBounds());
